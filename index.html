@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,9 +8,25 @@
     <script src="01.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-    <h1>商品列表</h1>
+    <header>
+        <h1>商品列表</h1>
+        <img src="images/cart-icon.svg" alt="Cart" id="cart-icon">
+    </header>
     <div class="product-list">
     </div>
+    <div id="cart-light-box" class="hidden">
+        <div class="cart-container">
+            <div class="cart-empty-message">
+                <h1>購物袋是空的</h1>
+
+            </div>
+            <button id="back-to-buy">繼續選購</button>
+        </div>
+        <div id="dark-background">
+        </div>
+    </div>
 </body>
+
 </html>
