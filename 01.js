@@ -70,25 +70,36 @@ function showCart() {
         cartLightBox.classList.toggle('hidden')
     })
 }
-
 // 將商品資料存入全域變數
 function addToCart(product) {
+    const addedMessage = document.createElement('div');
+    addedMessage.classList.add('added-message');
+    addedMessage.innerText= "已加入購物車！";
+    const bodyElement = document.getElementsByTagName('body')[0];
+    bodyElement.appendChild(addedMessage);
+    setTimeout(() => {
+        addedMessage.style.opacity = '0'; // 設置 opacity 為 0 來實現淡出效果
+    }, 500);
+    setTimeout(() => {
+        addedMessage.remove();
+    }, 1000);
+    
+    // bodyElement.appendChild(addedMessage);
     if (!itemsInCart[product.id]) {
         itemsInCart[product.id] = {
             id: product.id,
             title: product.title,
             price: product.price,
             quantity: 1,
-            imageSrc: product.images[0]
+            imageSrc: product.images[0],
+            itemTotalPrice: product.price,
+            
         };
-        // 第一次加入商品時更新DOM
-        updateCartDOM(itemsInCart);
-
     } else {
         itemsInCart[product.id].quantity++;
-        updateCartDOM(itemsInCart,);
+        itemsInCart[product.id].itemTotalPrice = itemsInCart[product.id].price * itemsInCart[product.id].quantity;
     }
-
+    updateCartDOM(itemsInCart);
 }
 
 // 據購物車內容，更新 DOM
@@ -105,40 +116,147 @@ function updateCartDOM(itemsInCart) {
     let cartList = document.querySelector('.cart-list');
     if (!cartList) {
         // 如果購物車列表還沒生成，創建購物車列表
+
         cartList = document.createElement('ul');
         cartList.classList.add('cart-list');
         cartContainer.insertBefore(cartList, backToBuyButton);
     }
-
+    // 取得所有商品的 ID 列表
+    const productIds = Object.keys(itemsInCart);
     // 歷遍 購物車資料
-    Object.keys(itemsInCart).forEach(productId => {
+    Object.keys(itemsInCart).forEach((productId, index) => {
+        // 檢查是否有該商品的 li 元素
+        let existingCartItem = document.getElementById(`cart-item-${productId}`);
+        if (existingCartItem) {
+            // 如果該商品已在清單中，更新數量
+            const quantityDisplay = existingCartItem.querySelector('.quantity-display');
+            quantityDisplay.innerText = itemsInCart[productId].quantity;
+
+            // 更新總價顯示
+            const totalPriceDisplay = existingCartItem.querySelector('.cart-item-total-price');
+            totalPriceDisplay.innerText = `$${itemsInCart[productId].itemTotalPrice.toFixed(2)}`;
 
 
-        // 創建購物車項目
-        const cartItem = document.createElement('li');
-        cartItem.classList.add('cart-item');
+        } else {
+            // 如果該商品還沒在清單中，創建購物車項目
+            const cartItem = document.createElement('li');
+            cartItem.classList.add('cart-item');
+            cartItem.id = `cart-item-${productId}`
 
-        const cartItemTitle = document.createElement('div');
-        cartItemTitle.classList.add('cart-item-title')
-        cartItemTitle.innerText = itemsInCart[productId].title;
-        const cartItemPrice = document.createElement('div');
-        cartItemPrice.classList.add('cart-item-price')
-        cartItemPrice.innerText = itemsInCart[productId].price;
-        const cartItemQuantity = document.createElement('div');
-        cartItemQuantity.classList.add('cart-item-quantity');
-        cartItemQuantity.innerText = itemsInCart[productId].quantity;
-        const cartItemImages = document.createElement('img')
-        cartItemImages.src = itemsInCart[productId].imageSrc;
+            const cartItemTitle = document.createElement('div');
+            cartItemTitle.classList.add('cart-item-title')
+            cartItemTitle.innerText = itemsInCart[productId].title;
+            const cartItemPrice = document.createElement('div');
+            cartItemPrice.classList.add('cart-item-price')
+            cartItemPrice.innerText = `$${itemsInCart[productId].price}`;
+            const cartItemTotalPrice = document.createElement('div');
+            cartItemTotalPrice.classList.add('cart-item-total-price');
+            cartItemTotalPrice.innerText = `$${itemsInCart[productId].itemTotalPrice.toFixed(2)}`;
 
 
 
-        cartItem.appendChild(cartItemImages);
-        cartItem.appendChild(cartItemTitle);
-        cartItem.appendChild(cartItemPrice);
-        cartItem.appendChild(cartItemQuantity);
-        cartList.appendChild(cartItem);
+            // 數量選擇器
+            const cartItemQuantity = document.createElement('div');
+            cartItemQuantity.classList.add('cart-item-quantity');
 
+            const cartItemQuantityBox = document.createElement('div');
+            cartItemQuantityBox.classList.add('cart-item-quantity-box');
+
+            //創建減少數量按鈕
+            const decreaseButton = document.createElement('button');
+            decreaseButton.classList.add('quantity-button', 'decrease');
+            decreaseButton.innerText = '-';
+            decreaseButton.addEventListener('click', function () {
+                adjustItemQuantity(productId, -1);
+            });
+
+            // 顯示當前數量
+            const quantityDisplay = document.createElement('span');
+            quantityDisplay.classList.add('quantity-display');
+            quantityDisplay.innerText = itemsInCart[productId].quantity;
+
+            // 創建增加數量按鈕
+            const increaseButton = document.createElement('button');
+            increaseButton.classList.add('quantity-button', 'increase');
+            increaseButton.innerText = '+';
+            increaseButton.addEventListener('click', function () {
+                adjustItemQuantity(productId, 1);
+            });
+
+            // 組合選擇器到 cartItemQuantityBox
+            cartItemQuantityBox.appendChild(decreaseButton);
+            cartItemQuantityBox.appendChild(quantityDisplay);
+            cartItemQuantityBox.appendChild(increaseButton);
+
+
+            cartItemQuantity.innerText = itemsInCart[productId].quantity;
+            const cartItemImages = document.createElement('img')
+            cartItemImages.src = itemsInCart[productId].imageSrc;
+
+            // 創建 li 中的文字容器
+            const cartItemTextBox = document.createElement('div');
+            cartItemTextBox.classList.add('cart-item-text-box');
+            // 創建 價錢與移除按鈕的容器
+            const cartItemPriceAndRemoveBox = document.createElement('div');
+            cartItemPriceAndRemoveBox.classList.add('cart-item-price-and-remove-box');
+
+            // 創建 li 中的移除按鈕
+            const cartItemRemoveButton = document.createElement('button');
+            cartItemRemoveButton.id = 'cart-item-remove-button'
+            cartItemRemoveButton.innerText = '移除'
+            cartItemRemoveButton.addEventListener('click', function () {
+                removeFromCart(productId);
+            })
+
+            cartItem.appendChild(cartItemImages);
+            cartItem.appendChild(cartItemTextBox);
+            cartItemTextBox.appendChild(cartItemTitle);
+            cartItemTextBox.appendChild(cartItemQuantityBox);
+            cartItemTextBox.appendChild(cartItemPriceAndRemoveBox);
+            cartItemPriceAndRemoveBox.appendChild(cartItemTotalPrice);
+            cartItemPriceAndRemoveBox.appendChild(cartItemRemoveButton);
+
+            cartList.appendChild(cartItem);
+        }
         console.log('購物車中的商品資料：', itemsInCart);
     })
+}
+// 移除購物車中的商品
+function removeFromCart(productId) {
+    console.log(productId);
+    console.log(itemsInCart);
+    if (itemsInCart[productId]) {
+        delete itemsInCart[productId];
+    }
+    console.log('商品已移除，目前的購物車內容：', itemsInCart);
 
+    // 如果購物車變空，顯示「購物袋是空的」的訊息
+    if (Object.keys(itemsInCart).length === 0) {
+        const cartContainer = document.querySelector('.cart-container');
+        const cartEmptyMessage = document.createElement('div');
+        cartEmptyMessage.classList.add('cart-empty-message');
+        cartEmptyMessage.innerHTML = '<h1>購物袋是空的</h1><button id="back-to-buy">繼續選購</button>';
+        cartContainer.prepend(cartEmptyMessage);
+
+        // 重新綁定繼續購物按鈕的事件
+        const backToBuyButton = document.getElementById('back-to-buy');
+        backToBuyButton.addEventListener('click', function () {
+            document.getElementById('cart-light-box').classList.toggle('hidden');
+        });
+    };
+}
+// 數量選擇器
+function adjustItemQuantity(productId, change){
+    if(itemsInCart[productId]){
+        itemsInCart[productId].quantity += change;
+        if (itemsInCart[productId].quantity < 1) {
+            itemsInCart[productId].quantity = 1;
+        }
+
+        // 更新該商品的總價
+        itemsInCart[productId].itemTotalPrice = itemsInCart[productId].price * itemsInCart[productId].quantity;
+
+        updateCartDOM(itemsInCart);
+        console.log(itemsInCart);
+    }
 }
