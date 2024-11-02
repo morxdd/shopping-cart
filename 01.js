@@ -74,7 +74,7 @@ function showCart() {
 function addToCart(product) {
     const addedMessage = document.createElement('div');
     addedMessage.classList.add('added-message');
-    addedMessage.innerText= "已加入購物車！";
+    addedMessage.innerText = "已加入購物車！";
     const bodyElement = document.getElementsByTagName('body')[0];
     bodyElement.appendChild(addedMessage);
     setTimeout(() => {
@@ -83,7 +83,7 @@ function addToCart(product) {
     setTimeout(() => {
         addedMessage.remove();
     }, 1000);
-    
+
     // bodyElement.appendChild(addedMessage);
     if (!itemsInCart[product.id]) {
         itemsInCart[product.id] = {
@@ -93,7 +93,7 @@ function addToCart(product) {
             quantity: 1,
             imageSrc: product.images[0],
             itemTotalPrice: product.price,
-            
+
         };
     } else {
         itemsInCart[product.id].quantity++;
@@ -228,6 +228,12 @@ function removeFromCart(productId) {
     if (itemsInCart[productId]) {
         delete itemsInCart[productId];
     }
+
+    // 移除對應的 DOM 元素
+    const cartItemElement = document.getElementById(`cart-item-${productId}`);
+    if (cartItemElement) {
+        cartItemElement.remove();  // 移除該商品的 li 元素
+    }
     console.log('商品已移除，目前的購物車內容：', itemsInCart);
 
     // 如果購物車變空，顯示「購物袋是空的」的訊息
@@ -235,19 +241,15 @@ function removeFromCart(productId) {
         const cartContainer = document.querySelector('.cart-container');
         const cartEmptyMessage = document.createElement('div');
         cartEmptyMessage.classList.add('cart-empty-message');
-        cartEmptyMessage.innerHTML = '<h1>購物袋是空的</h1><button id="back-to-buy">繼續選購</button>';
+        cartEmptyMessage.innerHTML = '<h1>購物袋是空的</h1>';
         cartContainer.prepend(cartEmptyMessage);
-
-        // 重新綁定繼續購物按鈕的事件
-        const backToBuyButton = document.getElementById('back-to-buy');
-        backToBuyButton.addEventListener('click', function () {
-            document.getElementById('cart-light-box').classList.toggle('hidden');
-        });
+        const cartList = document.querySelector('.cart-list');
+        cartList.remove();
     };
 }
 // 數量選擇器
-function adjustItemQuantity(productId, change){
-    if(itemsInCart[productId]){
+function adjustItemQuantity(productId, change) {
+    if (itemsInCart[productId]) {
         itemsInCart[productId].quantity += change;
         if (itemsInCart[productId].quantity < 1) {
             itemsInCart[productId].quantity = 1;

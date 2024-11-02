@@ -41,7 +41,7 @@ header img {
     justify-content: center;
     gap: 20px;
     /* padding: 20px; */
-    margin: 20px;
+    margin: 48px 20px;
 }
 .product-item {
     border: 1px solid #ddd;
